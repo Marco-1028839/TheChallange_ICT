@@ -54,9 +54,11 @@ class PersonPage(ctk.CTkFrame):
     
 
     def to_person_info(self, id):
-
-        self.server_conn = server_con.kluis_api_connectie()
-        output = self.server_conn.get_specific_kluis(id)
+        try:
+            self.server_conn = server_con.kluis_api_connectie()
+            output = self.server_conn.get_specific_kluis(id)
+        except:
+            pass
 
         status_page = self.controller.frames["Person_info_page"]
 

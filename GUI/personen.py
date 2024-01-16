@@ -97,11 +97,11 @@ class Person_info_page(ctk.CTkFrame):# Person_info_page class inherits from ctk.
         self.person_id = ctk.CTkLabel(self, text=f"")
         self.person_id.pack(pady=10, padx=10)
 
-        self.name = ctk.CTkLabel(self, text=f"Name: John Doe")
+        self.name = ctk.CTkLabel(self, text=f"Name: John Doe \nGeboren: 01-01-1990\nleeftijd: 32 jaar")
         self.name.pack(pady=10, padx=10)
 
-        self.area = ctk.CTkLabel(self, text=f"Locatie: Den Haag")
-        self.area.pack(pady=10, padx=10)
+        self.location = ctk.CTkLabel(self, text=f"Locatie: Den Haag\nGebied: wijk X")
+        self.location.pack(pady=10, padx=10)
         
         self.email = ctk.CTkLabel(self, text=f"Email: john@doe.com")
         self.email.pack(pady=10, padx=10)

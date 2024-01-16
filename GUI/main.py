@@ -1,6 +1,6 @@
 import customtkinter
 from config import *
-import login, home, kluizen, emails, server_con
+import login, home, kluizen, emails, server_con, personen
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -25,11 +25,14 @@ class App(customtkinter.CTk):
         self.homepage =  home.HomePage
         self.kluizenpage = kluizen.KluizenPage
         self.emailspage = emails.EmailsPage
+        self.emailsreaderpage = emails.Email_reader_page
         self.kluizen_status_page = kluizen.Kluis_status_page
+        self.personenpage = personen.PersonPage
+        self.persononinfopage = personen.Person_info_page
 
         
 
-        for frame in (self.logingpage, self.homepage, self.kluizenpage, self.emailspage, self.kluizen_status_page):
+        for frame in (self.logingpage, self.homepage, self.kluizenpage, self.emailspage, self.emailsreaderpage, self.kluizen_status_page, self.personenpage, self.persononinfopage):
             page_name = frame.__name__
             frame = frame(parent=container, controller=self)
             self.frames[page_name] = frame

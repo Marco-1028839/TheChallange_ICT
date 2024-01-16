@@ -12,3 +12,6 @@ class Menu_bar(ctk.CTkFrame):
 
         self.kluis_button = ctk.CTkButton(self, text="Email", command=lambda: controller.show_frame("EmailsPage"))
         self.kluis_button.pack(pady=10, padx=10)
+
+        self.kluis_button = ctk.CTkButton(self, text="Person", command=lambda: controller.show_frame("PersonPage"))
+        self.kluis_button.pack(pady=10, padx=10)

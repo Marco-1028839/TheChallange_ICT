@@ -1,9 +1,10 @@
-from typing import Optional, Tuple, Union
 import customtkinter as ctk
 from config import *
 import menu, server_con
 
-currend_kluis_id = 0
+
+
+
 
 class KluizenPage(ctk.CTkFrame):
     global list_of_kluis_ids
@@ -11,10 +12,11 @@ class KluizenPage(ctk.CTkFrame):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
 
+        
+
+
+
         #self.kluizen_status_page = None
-
-
-
 
         self.menu_bar = menu.Menu_bar(self.controller, parent=self, width=300)
         self.menu_bar.pack(side="left", fill="both")  
@@ -52,10 +54,17 @@ class KluizenPage(ctk.CTkFrame):
     
 
     def to_kluis_status(self, id):
-        global currend_kluis_id
-        currend_kluis_id = id
+
+        self.server_conn = server_con.kluis_api_connectie()
+        output = self.server_conn.get_specific_kluis(id)
+        
+
+
         status_page = self.controller.frames["Kluis_status_page"]
-        status_page.greeting_label.configure(text=f"{id}")
+
+        status_page.locker_number.configure(text=f"Locker ID:   {id}")
+        status_page.locker_status.configure(text=f"Locker status: EMPTY", text_color="#cc0425", width=25, height=25)
+
         self.controller.show_frame("Kluis_status_page")
  
 
@@ -67,11 +76,12 @@ class Kluis_status_page(ctk.CTkFrame):
         self.controller = controller
 
         # ---- confic variables
+        self.id = 0 #default value
+        self.status = False
+        self.status_text = "Empty"
+
         
-
-        # ---- get info about the kluis class
-        self.id = currend_kluis_id
-
+    
         # ---- graphics
         self.menu_bar = menu.Menu_bar(self.controller, parent=self, width=300)
         self.menu_bar.pack(side="left", fill="both")  
@@ -80,14 +90,30 @@ class Kluis_status_page(ctk.CTkFrame):
         self.kluis_id.pack(side="right")
 
         # ---- main area
-        self.greeting_label = ctk.CTkLabel(self, text=f"{self.id}")
-        self.greeting_label.pack(pady=10, padx=10)
-        self.get_kluis_info()
+        self.locker_number = ctk.CTkLabel(self, text=f"{self.id}")
+        self.locker_number.pack(pady=10, padx=10)
+        
+        self.locker_status = ctk.CTkLabel(self, text=f"{self.status_text}")
+        self.locker_status.pack(pady=10, padx=10)
 
+        self.locker_code = ctk.CTkLabel(self, text=f"Locker code: ***-***-***")
+        self.locker_code.pack(pady=10, padx=10)
 
-    def get_kluis_info(self):
-        """Get information from the server and display it on the page"""
-        pass
+        self.locker_status_button = ctk.CTkButton(self,
+                                                  text="Change status",
+                                                  height=50,
+                                                  width=100,
+                                                  border_color=MENU_BACKGROUND_COLOR,
+                                                  border_width=5)
+        self.locker_status_button.pack(side="left", anchor="center",pady=10, padx=10)
+        self.locker_delete_button = ctk.CTkButton(self,
+                                                  text="Delete",
+                                                  height=50,
+                                                  width=100,
+                                                  border_color=MENU_BACKGROUND_COLOR,
+                                                  border_width=5)
+        self.locker_delete_button.pack(side="left", anchor="center",pady=10, padx=10)
+        
 
 
 

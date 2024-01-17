@@ -11,9 +11,10 @@ class KluizenPage(ctk.CTkFrame):
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-
-        
-
+           
+        self.server_conn = server_con.kluis_api_connectie()
+        output = self.server_conn.get_all_kluizen()
+    
 
 
         #self.kluizen_status_page = None
@@ -23,14 +24,39 @@ class KluizenPage(ctk.CTkFrame):
         self.menu_bar.configure(fg_color=MENU_BACKGROUND_COLOR)
 
         self.panel = ctk.CTkFrame(self)
-        idx = 0
-        idy = 1
+
+        last_index = 0
+        while True:
+            if last_index >= len(output):
+                break
+            else:
+                frame = ctk.CTkFrame(self.panel)
+                for _ in range(5):
+                    button_id = output[last_index]['id']
+                    last_index += 1
+                    panel = ctk.CTkButton(
+                        frame,
+                        text=f"Kluis ID: {button_id}",
+                        height=100,
+                        width=100,
+                        border_color=MENU_BACKGROUND_COLOR,
+                        border_width=5,
+                        fg_color=KLUIS_FULL_COLOR,
+                        text_color="black",
+                        command=lambda bid=button_id: self.to_kluis_status(bid)
+                        )
+                    panel.pack(side="left", anchor="center",pady=10, padx=10)
+                frame.pack(side="top", anchor="center", pady=10, padx=10)
+        self.panel.pack(side="right", fill="both", expand=True)  
+        
+        
+        
+        """
         for y in range(4):
-            idy+=1
+            
             frame = ctk.CTkFrame(self.panel)
             for x in range(5):
-                button_id = idx - 1 + idy  # Calculate the button ID once for each button
-                idx+=1
+                
                 panel = ctk.CTkButton(
                     frame, 
                     text=f"{button_id}", 
@@ -47,23 +73,28 @@ class KluizenPage(ctk.CTkFrame):
                 
 
             frame.pack(side="top", anchor="center", pady=10, padx=10)
-            idy -= 1
+        """    
         
-        self.panel.pack(side="right", fill="both", expand=True)
         
+
+    
     
 
     def to_kluis_status(self, id):
-        try:
-            self.server_conn = server_con.kluis_api_connectie()
-            output = self.server_conn.get_specific_kluis(id)
-        except:
-            pass
-
+        self.server_conn = server_con.kluis_api_connectie()
+        output = self.server_conn.get_specific_kluis(id)
+        
         status_page = self.controller.frames["Kluis_status_page"]
 
-        status_page.locker_number.configure(text=f"Locker ID:   {id}")
-        status_page.locker_status.configure(text=f"Locker status: EMPTY", text_color="#cc0425", width=25, height=25)
+        
+        status_page.locker_number.configure(text=f"Locker ID:   {output['id']}")
+        if output['status'] == 0:
+            status_page.locker_status.configure(text=f"Locker status: EMPTY", text_color="#cc0425", width=25, height=25)
+        elif output['status'] == 1:
+            status_page.locker_status.configure(text=f"Locker status: FULL", text_color="#008000", width=25, height=25)
+        
+        status_page.locker_code.configure(text=f"Locker code:   {output['code']}")
+        status_page.status = output['status']
 
         self.controller.show_frame("Kluis_status_page")
  
@@ -77,8 +108,8 @@ class Kluis_status_page(ctk.CTkFrame):
 
         # ---- confic variables
         self.id = 0 #default value
-        self.status = False
-        self.status_text = "Empty"
+        self.status = 0 #default value
+        self.status_text = "Locker status: EMPTY" #default value
 
         
     
@@ -104,7 +135,8 @@ class Kluis_status_page(ctk.CTkFrame):
                                                   height=50,
                                                   width=100,
                                                   border_color=MENU_BACKGROUND_COLOR,
-                                                  border_width=5)
+                                                  border_width=5,
+                                                  command=lambda: self.change_status())
         self.locker_status_button.pack(side="left", anchor="center",pady=10, padx=10)
         self.locker_delete_button = ctk.CTkButton(self,
                                                   text="Delete",
@@ -114,8 +146,19 @@ class Kluis_status_page(ctk.CTkFrame):
                                                   border_width=5)
         self.locker_delete_button.pack(side="left", anchor="center",pady=10, padx=10)
         
-
-
+    def change_status(self):
+        self.server_conn = server_con.kluis_api_connectie()
+        if self.status == 0:
+            self.server_conn.change_status(self.id, 1)
+            self.status = 1
+            self.status_text = "Locker status: FULL"
+            self.locker_status.configure(text=f"Locker status: FULL", text_color="#008000", width=25, height=25)
+        else:
+            self.server_conn.change_status(self.id, 0)
+            self.status = 0
+            self.status_text = "Locker status: EMPTY"
+            self.locker_status.configure(text=f"Locker status: EMPTY", text_color="#cc0425", width=25, height=25)
+        self.locker_status.configure(text=f"{self.status_text}")
 
 
 

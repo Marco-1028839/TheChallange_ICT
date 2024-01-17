@@ -2,7 +2,7 @@ import requests
 import json
 import random
 
-from  config import *
+URL = "http://127.0.0.1:5000"
 
 class email_api_connectie:
     headers = {'Content-Type': 'application/json'}
@@ -11,8 +11,7 @@ class email_api_connectie:
         pass
 
     def get_all_emails(self):
-        response = requests.get(f"{URL}/emails", headers=self.headers)
-        return response.json()
+        pass
 
     def get_specific_email(self,email_id):
         response = requests.get(f"{URL}/emails/{email_id}", headers=self.headers)
@@ -25,7 +24,7 @@ class email_api_connectie:
             "body": body,
             "date": date
         }
-        response = requests.put(f"{URL}/emails/{email_id}", headers=self.headers, data=json.dumps(data))
+        response = requests.post(f"{URL}/emails/{email_id}", headers=self.headers, data=json.dumps(data))
         return response.json()
     
     def delete_email(self,email_id):
@@ -55,7 +54,7 @@ class kluis_api_connectie:
             "status": status,
             "pakket_id": pakket_id
         }
-        response = requests.put(f"{URL}/kluis/{kluis_id}", headers=self.headers, data=json.dumps(data))
+        response = requests.post(f"{URL}/kluis/{kluis_id}", headers=self.headers, data=json.dumps(data))
         return response.json()
     
     def change_status(self,kluis_id,status):
@@ -72,23 +71,4 @@ class kluis_api_connectie:
         response = requests.patch(f"{URL}/kluis/{kluis_id}", headers=self.headers, data=json.dumps(data))
         return response.json()
 
-# testing
-"""
-email = email_api_connectie()
-print("done with email")
-for id in range(10):
-    print(f"{id}")
-    response = email.make_email(id,"john@doe.com","test","f f f f f ff d asfdasfas asf sad","17-1-2024")
-    print(response)
 
-
-
-kluis = kluis_api_connectie()
-for id in range(25):
-    if id < 10: 
-        response = kluis.make_kluis(id, f"001-00{id}-001", 0, 0, 0, 0)
-        print(response)
-    else:
-        response = kluis.make_kluis(id, f"001-0{id}-001", 0, 0, 0, 0)
-        print(response)
-"""

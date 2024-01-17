@@ -42,10 +42,7 @@ class App(customtkinter.CTk):
         
         #self.kluizenpage.to_kluis_status = self.kluizen_status_page
 
-        # ---- Pre loading in data from database ----
-        # this need a better fix
-        kluis_api = server_con.kluis_api_connectie()
-        all_kluizen = kluis_api.get_all_kluizen()
+       
 
         self.show_frame("LoginPage")
 

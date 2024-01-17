@@ -10,6 +10,16 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///challange.db"
 db = SQLAlchemy(app)
 
 
+class Email(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reciever = db.Column(db.String, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    body = db.Column(db.String, nullable=False)
+    date = db.Column(db.String, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Email(id = {self.id}, recierver = {self.reciever}, title = {self.title}, body = {self.body}, date = {self.date})"
+
 class Kluis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String, nullable=False, unique=True)
@@ -54,6 +64,18 @@ class Pakket(db.Model):
 
 app.app_context().push()
 #db.create_all()
+
+email_put_args = reqparse.RequestParser()
+email_put_args.add_argument('reciever', type=str, required=True, help="Reciever of the email")
+email_put_args.add_argument('title', type=str, required=True, help="Title of the email")
+email_put_args.add_argument('body', type=str, required=True, help="Body of the email")
+email_put_args.add_argument('date', type=str, required=True, help="Date of the email")
+
+email_update_args = reqparse.RequestParser()
+email_update_args.add_argument('reciever', type=str, help="Reciever of the email")
+email_update_args.add_argument('title', type=str, help="Title of the email")
+email_update_args.add_argument('body', type=str, help="Body of the email")
+email_update_args.add_argument('date', type=str, help="Date of the email")
 
 
 kluis_put_args = reqparse.RequestParser()
@@ -132,14 +154,91 @@ resource_fields_pakket = {
     'houdbaarheid': fields.String
 }
 
+resource_fields_emails = {
+    'id': fields.Integer,
+    'reciever': fields.String,
+    'title': fields.String,
+    'body': fields.String,
+    'date': fields.String
+}
+
+
+class Emails_api_all(Resource):
+
+    @marshal_with(resource_fields_emails)
+    def get(self):
+        result = Email.query.all()
+        if not result:
+            abort(404, message="Geen emails gevonden")
+        return result
+
+
+class Emails_api(Resource):
+
+    @marshal_with(resource_fields_emails)
+    def get(self, emails_id):
+        result = Email.query.filter_by(id=emails_id).first()
+        if not result:
+            abort(404, message="Geen email gevonden")
+        return result
+    
+    @marshal_with(resource_fields_emails)
+    def put(self, emails_id):
+        args = email_put_args.parse_args()
+        result = Email.query.filter_by(id=emails_id).first()
+        if result:
+            abort(409, message="Email bestaat al")
+        
+        email = Email(id=emails_id, 
+                      reciever=args['reciever'], 
+                      title=args['title'], 
+                      body=args['body'], 
+                      date=args['date'])
+        db.session.add(email)
+        db.session.commit()
+        return email, 201
+        
+    @marshal_with(resource_fields_emails)
+    def patch(self, emails_id):
+        args = email_update_args.parse_args()
+        result = Email.query.filter_by(id=emails_id).first()
+        
+        if not result:
+            abort(404, message="Geen email gevonden")
+        else:
+            if args["reciever"]:
+                result.reciever = args["reciever"]
+            if args["title"]:
+                result.title = args["title"]
+            if args["body"]:
+                result.body = args["body"]
+            if args["date"]:
+                result.date = args["date"]
+            db.session.commit()
+            return result, 201
+
+    @marshal_with(resource_fields_emails)
+    def delete(self, emails_id):
+        result = Email.query.filter_by(id=emails_id).first()
+        if not result:
+            abort(404, message="Geen email gevonden")
+        else:
+            db.session.delete(result)
+            db.session.commit()
+            return result, 201
+
+
 class Kluis_api_all(Resource):
 
+    @marshal_with(resourse_fields_kluis)
     def get(self):
         """Gets all kluizen from the database.
         
         Returns a list of all kluizen objects.
         """
         kluizen = Kluis.query.all()
+        if not kluizen:
+            abort(404, message="Geen kluizen gevonden")
         return kluizen
 
 
@@ -369,6 +468,8 @@ api.add_resource(Kluis_api,"/kluis/<int:kluis_id>")
 api.add_resource(Kluis_adres_api,"/kluis_adres/<int:kluis_adres_id>")
 api.add_resource(Gebruiker_api,"/gebruiker/<int:gebruiker_id>")
 api.add_resource(Pakket_api,"/pakket/<int:pakket_id>")
+api.add_resource(Emails_api_all,"/emails/")
+api.add_resource(Emails_api,"/emails/<int:emails_id>")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from config import *
 import menu, server_con
+import random
 
 
 
@@ -145,6 +146,30 @@ class Kluis_status_page(ctk.CTkFrame):
                                                   border_color=MENU_BACKGROUND_COLOR,
                                                   border_width=5)
         self.locker_delete_button.pack(side="left", anchor="center",pady=10, padx=10)
+
+        self.locker_change_code_button = ctk.CTkButton(self,
+                                                       text="Change code",
+                                                       height=50,
+                                                       width=100,
+                                                       border_color=MENU_BACKGROUND_COLOR,
+                                                       border_width=5,
+                                                       command=lambda: self.change_code())
+        self.locker_change_code_button.pack(side="left", anchor="center",pady=10, padx=10)
+    
+    def change_code(self):
+        code = f"{random.randint(100,999)}-{random.randint(100,999)}-{random.randint(100,999)}"
+        self.server_conn = server_con.kluis_api_connectie()
+        output = self.server_conn.get_all_kluizen()
+        for kluis in output:
+            if kluis["code"] == code:
+                code = f"{random.randint(100,999)}-{random.randint(100,999)}-{random.randint(100,999)}"
+            else:
+                self.server_conn.change_code(self.id, code)
+                self.locker_code.configure(text=f"Locker code:   {code}")
+                break
+
+
+
         
     def change_status(self):
         self.server_conn = server_con.kluis_api_connectie()

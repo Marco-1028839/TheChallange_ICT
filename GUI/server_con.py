@@ -4,6 +4,34 @@ import random
 
 from  config import *
 
+class personen_api_connectie:
+    headers = {'Content-Type': 'application/json'}
+
+    def __init__(self) -> None:
+        pass
+        
+    def get_all_persons(self):
+        response = requests.get(f"{URL}/gebruiker", headers=self.headers)
+        return response.json()
+    
+    def get_specific_person(self,person_id):
+        response = requests.get(f"{URL}/gebruiker/{person_id}", headers=self.headers)
+        return response.json()
+    
+    def make_person(self,person_id,username,email,telefoon):
+        data = {
+            "id": person_id,
+            "username": username,
+            "email": email,
+            "telefoon": telefoon
+        }
+        response = requests.put(f"{URL}/gebruiker/{person_id}", headers=self.headers, data=json.dumps(data))
+        return response.json()
+    
+    def delete_person(self,person_id):
+        response = requests.delete(f"{URL}/gebruiker/{person_id}", headers=self.headers)
+        return response.json()
+
 class email_api_connectie:
     headers = {'Content-Type': 'application/json'}
 
@@ -74,6 +102,16 @@ class kluis_api_connectie:
 
 # testing
 """
+person = personen_api_connectie()
+print("Done with person")
+for id in range(10):
+    print(f"{id}")
+    response = person.make_person(id,f"test{id}",f"John@doe{str(id)}.nl",f"061234567{id}")
+    print(response)
+
+
+
+
 email = email_api_connectie()
 print("done with email")
 for id in range(10):

@@ -359,6 +359,20 @@ class Kluis_adres_api(Resource):
         db.session.commit()
         return result, 200
 
+class Gebruiker_api_all(Resource):
+
+    @marshal_with(resource_fields_gebruiker)
+    def get(self):
+        """Gets all gebruikers from the database.
+
+        Returns a list of all gebruiker objects.
+        """
+        gebruikers = Gebruiker.query.all()
+        if not gebruikers:
+            abort(404, message="Geen gebruikers gevonden")
+        return gebruikers
+
+
 class Gebruiker_api(Resource):
 
     @marshal_with(resource_fields_gebruiker)
@@ -463,9 +477,10 @@ class Pakket_api(Resource):
         db.session.commit()
         return result, 200
     
-api.add_resource(Kluis_api_all, "/kluis/")
+api.add_resource(Kluis_api_all,"/kluis/")
 api.add_resource(Kluis_api,"/kluis/<int:kluis_id>")
 api.add_resource(Kluis_adres_api,"/kluis_adres/<int:kluis_adres_id>")
+api.add_resource(Gebruiker_api_all,"/gebruiker/")
 api.add_resource(Gebruiker_api,"/gebruiker/<int:gebruiker_id>")
 api.add_resource(Pakket_api,"/pakket/<int:pakket_id>")
 api.add_resource(Emails_api_all,"/emails/")

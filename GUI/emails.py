@@ -7,14 +7,13 @@ import menu, server_con
 
 
 class EmailsPage(ctk.CTkFrame):
-    global list_of_kluis_ids
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
 
         self.server_conn = server_con.email_api_connectie()
         output = self.server_conn.get_all_emails()
-        print(len(output))
+        
         
 
 

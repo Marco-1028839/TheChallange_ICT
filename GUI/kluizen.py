@@ -8,8 +8,14 @@ import random
 
 
 class KluizenPage(ctk.CTkFrame):
-    global list_of_kluis_ids
     def __init__(self, parent, controller):
+        """Initializes KluizenPage frame with menu bar and grid of locker status buttons.
+        
+        Connects to locker API to get list of all lockers. Creates menu bar and configures 
+        style. Creates scrollable frame with grid of buttons for each locker, configured
+        with locker ID, colors indicating status, and click handler to show locker details.
+        Buttons are arranged in grid of 5 columns per row. 
+        """
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
            
@@ -82,6 +88,10 @@ class KluizenPage(ctk.CTkFrame):
     
 
     def to_kluis_status(self, id):
+        # Retrieves locker data from API and configures status page with details.
+        # id: ID of locker to retrieve data for and display status of.
+        # Gets locker data from API based on id. Configures status page labels and colors 
+        # to indicate locker status. Shows status page.
         self.server_conn = server_con.kluis_api_connectie()
         output = self.server_conn.get_specific_kluis(id)
         
@@ -102,8 +112,13 @@ class KluizenPage(ctk.CTkFrame):
 
 
 
-class Kluis_status_page(ctk.CTkFrame):
+class Kluis_status_page(ctk.CTkFrame):# Kluis_status_page is a custom CTkFrame subclass that displays the status and information for a specific locker. It allows changing the locker status and deleting the locker.
+
     def __init__(self, parent, controller):
+        # Initializes Kluis_status_page frame with locker ID, status, and code. 
+        # Configures menu bar and UI elements to display locker info and buttons 
+        # to change status, delete, and change code. Binds button clicks to 
+        # corresponding methods.
         ctk.CTkFrame.__init__(self,parent)
         self.controller = controller
 
@@ -157,6 +172,8 @@ class Kluis_status_page(ctk.CTkFrame):
         self.locker_change_code_button.pack(side="left", anchor="center",pady=10, padx=10)
     
     def change_code(self):
+        # Generates a random 3-part locker code, checks if it already 
+        # exists, and if not, updates the locker with the new code
         code = f"{random.randint(100,999)}-{random.randint(100,999)}-{random.randint(100,999)}"
         self.server_conn = server_con.kluis_api_connectie()
         output = self.server_conn.get_all_kluizen()
@@ -172,6 +189,7 @@ class Kluis_status_page(ctk.CTkFrame):
 
         
     def change_status(self):
+        # Changes the status of the locker between FULL and EMPTY by updating the server and UI.
         self.server_conn = server_con.kluis_api_connectie()
         if self.status == 0:
             self.server_conn.change_status(self.id, 1)

@@ -10,6 +10,16 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///challange.db"
 db = SQLAlchemy(app)
 
 
+class Email(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reciever = db.Column(db.String, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    body = db.Column(db.String, nullable=False)
+    date = db.Column(db.String, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Email(id = {self.id}, recierver = {self.reciever}, title = {self.title}, body = {self.body}, date = {self.date})"
+
 class Kluis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String, nullable=False, unique=True)
@@ -50,28 +60,22 @@ class Pakket(db.Model):
 
     def __repr__(self) -> str:
         return f"Pakket(id = {self.id}, naam = {self.naam}, inhoud = {self.inhoud}, houdbaarheid = {self.houdbaarheid})"
-
-class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    password = db.Column(db.String, nullable=False)
-    admin = db.Column(db.Boolean, default=False)
-    def __repr__(self) -> str:
-        return f"Users(id = {self.id}, name = {self.name}, password = {self.password}, admin = {self.admin})"
+    
 
 app.app_context().push()
-db.create_all()
+#db.create_all()
 
-users_put_args = reqparse.RequestParser()
-users_put_args.add_argument('name', type=str, required=True, help='No user name provided')
-users_put_args.add_argument('password', type=str, required=True, help='No password provided')
-users_put_args.add_argument('admin', type=bool, required=True, help='No admin status provided')
+email_put_args = reqparse.RequestParser()
+email_put_args.add_argument('reciever', type=str, required=True, help="Reciever of the email")
+email_put_args.add_argument('title', type=str, required=True, help="Title of the email")
+email_put_args.add_argument('body', type=str, required=True, help="Body of the email")
+email_put_args.add_argument('date', type=str, required=True, help="Date of the email")
 
-users_update_args = reqparse.RequestParser()
-users_update_args.add_argument('name', type=str, required=True, help='No user name provided')
-users_update_args.add_argument('password', type=str, required=True, help='No password provided')
-users_update_args.add_argument('admin', type=bool, required=True, help='No admin status provided')
-
+email_update_args = reqparse.RequestParser()
+email_update_args.add_argument('reciever', type=str, help="Reciever of the email")
+email_update_args.add_argument('title', type=str, help="Title of the email")
+email_update_args.add_argument('body', type=str, help="Body of the email")
+email_update_args.add_argument('date', type=str, help="Date of the email")
 
 
 kluis_put_args = reqparse.RequestParser()
@@ -120,13 +124,6 @@ pakket_update_args.add_argument('naam', type=str, help='Naam van het pakket')
 pakket_update_args.add_argument('inhoud', type=str, help='inhoud van het pakket')
 pakket_update_args.add_argument('houdbaarheid', type=str, help='Houdbaarheid van het pakket')
 
-resourse_field_users = {
-    'id': fields.Integer,
-    'name': fields.String,
-    'password': fields.String,
-    'admin': fields.Boolean
-}
-
 
 resourse_fields_kluis = {
     'id': fields.Integer,
@@ -157,57 +154,92 @@ resource_fields_pakket = {
     'houdbaarheid': fields.String
 }
 
-class Users_api(Resource):
+resource_fields_emails = {
+    'id': fields.Integer,
+    'reciever': fields.String,
+    'title': fields.String,
+    'body': fields.String,
+    'date': fields.String
+}
 
-    @marshal_with(resourse_field_users)
-    def get(self,user_id):
-        result = Users.query.filter_by(id=user_id).first()
+
+class Emails_api_all(Resource):
+
+    @marshal_with(resource_fields_emails)
+    def get(self):
+        result = Email.query.all()
         if not result:
-            abort(404, message="geen user kut")
+            abort(404, message="Geen emails gevonden")
+        return result
+
+
+class Emails_api(Resource):
+
+    @marshal_with(resource_fields_emails)
+    def get(self, emails_id):
+        result = Email.query.filter_by(id=emails_id).first()
+        if not result:
+            abort(404, message="Geen email gevonden")
         return result
     
-    @marshal_with(resourse_field_users)
-    def put(self,user_id):
-        args = users_put_args.parse_args()
-        result = Users.query.filter_by(id=user_id).first()
+    @marshal_with(resource_fields_emails)
+    def put(self, emails_id):
+        args = email_put_args.parse_args()
+        result = Email.query.filter_by(id=emails_id).first()
         if result:
-            abort(409, message="User bestaat al kut")
-
-        user = Users(id=user_id, name=args["name"],password=args["password"],admin=args["admin"])
-        db.session.add(user)
-        db.session.commit()
-        return user, 201
+            abort(409, message="Email bestaat al")
         
-    
-    @marshal_with(resourse_field_users)
-    def patch(self,user_id):
-        args = users_update_args.parse_args()
-        result = Users.query.filter_by(id=user_id).first()
-        if not result:
-            abort(404, message="geen user kut, kan nie verandere he")
-
-        if args["id"]:
-            result.id = args["id"]
-        if args["name"]:
-            result.name = args["name"]
-        if args["password"]:
-            result.password = args["password"]
-        if args["admin"]:
-            result.admin = args["admin"]
+        email = Email(id=emails_id, 
+                      reciever=args['reciever'], 
+                      title=args['title'], 
+                      body=args['body'], 
+                      date=args['date'])
+        db.session.add(email)
+        db.session.commit()
+        return email, 201
         
-        db.session.commit()
-
-        return result
-    
-    @marshal_with(resourse_field_users)
-    def delete(self,user_id):
-        result = Users.query.filter_by(id=user_id).first()
+    @marshal_with(resource_fields_emails)
+    def patch(self, emails_id):
+        args = email_update_args.parse_args()
+        result = Email.query.filter_by(id=emails_id).first()
+        
         if not result:
-            abort(404, message="geen users kut")
-        db.session.delete(result)
-        db.session.commit()
-        return result, 200
-    
+            abort(404, message="Geen email gevonden")
+        else:
+            if args["reciever"]:
+                result.reciever = args["reciever"]
+            if args["title"]:
+                result.title = args["title"]
+            if args["body"]:
+                result.body = args["body"]
+            if args["date"]:
+                result.date = args["date"]
+            db.session.commit()
+            return result, 201
+
+    @marshal_with(resource_fields_emails)
+    def delete(self, emails_id):
+        result = Email.query.filter_by(id=emails_id).first()
+        if not result:
+            abort(404, message="Geen email gevonden")
+        else:
+            db.session.delete(result)
+            db.session.commit()
+            return result, 201
+
+
+class Kluis_api_all(Resource):
+
+    @marshal_with(resourse_fields_kluis)
+    def get(self):
+        """Gets all kluizen from the database.
+        
+        Returns a list of all kluizen objects.
+        """
+        kluizen = Kluis.query.all()
+        if not kluizen:
+            abort(404, message="Geen kluizen gevonden")
+        return kluizen
 
 
 class Kluis_api(Resource):
@@ -236,6 +268,15 @@ class Kluis_api(Resource):
     
     @marshal_with(resourse_fields_kluis)
     def patch(self,kluis_id):
+        """Updates an existing kluis by ID.
+        
+        Parses the update arguments from the request. 
+        Gets the kluis to update from the database by ID.
+        Returns 404 if the kluis is not found.
+        Updates the kluis fields with the passed arguments.
+        Commits the changes to the database.
+        Returns the updated kluis object.
+        """
         args = kluis_update_args.parse_args()
         result = Kluis.query.filter_by(id=kluis_id).first()
         if not result:
@@ -317,6 +358,20 @@ class Kluis_adres_api(Resource):
         db.session.delete(result)
         db.session.commit()
         return result, 200
+
+class Gebruiker_api_all(Resource):
+
+    @marshal_with(resource_fields_gebruiker)
+    def get(self):
+        """Gets all gebruikers from the database.
+
+        Returns a list of all gebruiker objects.
+        """
+        gebruikers = Gebruiker.query.all()
+        if not gebruikers:
+            abort(404, message="Geen gebruikers gevonden")
+        return gebruikers
+
 
 class Gebruiker_api(Resource):
 
@@ -421,12 +476,15 @@ class Pakket_api(Resource):
         db.session.delete(result)
         db.session.commit()
         return result, 200
-
-api.add_resource(Users_api,"/Paard/<int:user_id>")
+    
+api.add_resource(Kluis_api_all,"/kluis/")
 api.add_resource(Kluis_api,"/kluis/<int:kluis_id>")
 api.add_resource(Kluis_adres_api,"/kluis_adres/<int:kluis_adres_id>")
+api.add_resource(Gebruiker_api_all,"/gebruiker/")
 api.add_resource(Gebruiker_api,"/gebruiker/<int:gebruiker_id>")
 api.add_resource(Pakket_api,"/pakket/<int:pakket_id>")
+api.add_resource(Emails_api_all,"/emails/")
+api.add_resource(Emails_api,"/emails/<int:emails_id>")
 
 
 if __name__ == "__main__":

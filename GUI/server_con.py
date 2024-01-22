@@ -124,9 +124,9 @@ for id in range(10):
 kluis = kluis_api_connectie()
 for id in range(25):
     if id < 10: 
-        response = kluis.make_kluis(id, f"001-00{id}-001", 0, 0, 0, 0)
+        response = kluis.make_kluis(id, f"00{id}-00{id}-001", 0, 0, 0, 0)
         print(response)
     else:
-        response = kluis.make_kluis(id, f"001-0{id}-001", 0, 0, 0, 0)
+        response = kluis.make_kluis(id, f"0{id}-0{id}-001", 0, 0, 0, 0)
         print(response)
 """

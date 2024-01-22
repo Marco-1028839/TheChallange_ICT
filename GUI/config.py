@@ -22,6 +22,6 @@ MENU_BACKGROUND_COLOR = "#1e1f22"
 
 
 #Server info
-URL = "http://127.0.0.1:5000"
+URL = "https://challanger14.pythonanywhere.com/"
 
 pre_loaded_kluizen = []
